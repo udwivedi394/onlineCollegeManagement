@@ -37,11 +37,18 @@ def login():
             counter+=1
             print("Try Again")
 
+def signup():
+    print("Welcome!")
+    print("")
+
 if __name__=='__main__': 
     while 1:
         print("1. Login")
+        print("2. SignUp")
         ch=input("Any other key to exit: ")
         if ch=='1':
             login()
+        elif ch=='2':
+            signup()
         else:
             break

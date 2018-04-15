@@ -1,2 +1,3 @@
-"faculty_id","parent_user_id","designation","salary"
-"F001","7","HOD","1223500"
+"faculty_id","employee_id","designation","salary"
+"F001","74000","HOD","1223500"
+"F002","74001","Assistant Professor","666000"

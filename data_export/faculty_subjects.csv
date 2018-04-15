@@ -1,2 +1,4 @@
-"id","taught_by_faculty_id","subject_code","total_classes"
-"1","F001","MA101","0"
+"id","taught_by_faculty_id","subject_code","branch_subject_id","total_classes"
+"1","F001","MA101","1","0"
+"2","F001","MA101","183","0"
+"3","F001","MA101","270","0"

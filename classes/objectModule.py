@@ -7,3 +7,7 @@ class FacultySubject:
         self.subject_name = subject_name
         self.branch_code = branch_code
         self.semester = semester
+
+class Subject:
+    def __init__():
+        self.subject_code

@@ -35,13 +35,14 @@ class Employee(Person):
         self.employee_id = emp_id
 
 class Student(Person):
-    def __init__(self, id_i, user_id, std_roll_no, std_year, std_sem, std_branch):
+    def __init__(self, id_i, user_id, std_roll_no, std_year, std_sem, std_branch, branch_name):
         super().__init__(id_i, user_id)
         super().populate_userdetails()
         self.std_roll_no = std_roll_no
         self.std_admission_year = std_year
         self.semester = std_sem
         self.std_branch = std_branch
+        self.branch_name = branch_name 
     
     def __str__(self):
         return "%d|%s|%s|%d|%d|%d|%s"%(self.id, self.user_id, self.user_details, self.std_roll_no,

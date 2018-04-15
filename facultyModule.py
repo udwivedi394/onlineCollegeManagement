@@ -321,8 +321,14 @@ def update_semester_status(student_roll_no, semester):
         sql = "UPDATE stu_semwise_status SET\
                 sem_%d_max_marks=%d, sem_%d_marks=%d, sem_%d_status='%s'\
                 WHERE std_roll_no=%d"%(semester,tot_max_marks,semester,tot_marks_obtained,semester,status,student_roll_no)
-        
+
         cur.execute(sql)
+        
+        if status == "PASS" and semester!=8:
+            sql = "UPDATE students SET std_semester=std_semester+1\
+                    WHERE std_roll_no=%d"%(student_roll_no)
+            cur.execute(sql)
+        
         con.commit()
          
     except pymysql.OperationalError as e:

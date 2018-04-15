@@ -18,7 +18,8 @@ faculty;" | sed 's/\t/","/g;s/^/"/;s/$/"/;s/\n//g' > faculty.csv
 mysql --defaults-extra-file=config.cfg collegeDB -B -e "select * from
 faculty_subjects;" | sed 's/\t/","/g;s/^/"/;s/$/"/;s/\n//g' > faculty_subjects.csv
 
-mysql --defaults-extra-file=config.cfg collegeDB -B -e "select * from
+mysql --defaults-extra-file=config.cfg collegeDB -B -e "select parent_user_id, std_roll_no, 
+std_admission_year, std_semester, std_branch from
 students;" | sed 's/\t/","/g;s/^/"/;s/$/"/;s/\n//g' > students.csv      
 
 mysql --defaults-extra-file=config.cfg collegeDB -B -e "select * from

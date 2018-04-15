@@ -174,7 +174,6 @@ def check_attendance(student):
                 JOIN branch_subjects C on A.std_branch = C.branch_code \
                 JOIN subjects D on C.subject_code = D.subject_code \
                 where std_roll_no=%s and C.semester=%d"%(student.std_roll_no,int(sem))        
-        print(sql1)
         cur.execute(sql1)       
 
         cur2 = dBconnectivity.create_cursor(con)

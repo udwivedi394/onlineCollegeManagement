@@ -26,7 +26,7 @@ CREATE TABLE `user_validation` (
 ) AUTO_INCREMENT=1;
 
 create table user_details (
-    id INT,
+    id INT AUTO_INCREMENT,
     parent_user_id mediumint(8) unsigned UNIQUE,
     first_name VARCHAR(50),
     last_name VARCHAR(50),

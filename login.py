@@ -3,6 +3,7 @@ from validations import validationModule as vm
 from classes import memberModule as memc
 import studentModule as sM
 import facultyModule as fM
+import userRegistration as uR
 
 def login():
     end = False
@@ -39,7 +40,7 @@ def login():
 
 def signup():
     print("Welcome!")
-    print("")
+    uR.user_registration()
 
 if __name__=='__main__': 
     while 1:

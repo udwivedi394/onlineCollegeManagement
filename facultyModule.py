@@ -49,25 +49,42 @@ def view_faculty_profile(faculty):
     print("\n\n")
     return 
 
-def faculty_subjects(faculty):
+def faculty_subjects(faculty,display_marks=False):
     try:
         con = dBconnectivity.create_connection()
         cur = dBconnectivity.create_cursor(con)
-        sql = "SELECT A.id,C.id,B.Subject_code,B.Subject,C.branch_code,C.semester \
+        sql = "SELECT A.id,C.id,B.Subject_code,B.Subject,C.branch_code,C.semester,\
+                B.internal_marks,B.external_marks,B.Credits \
                 FROM faculty_subjects A \
                 JOIN subjects B on B.Subject_code = A.subject_code \
                 JOIN branch_subjects C on C.id = A.branch_subject_id \
                 WHERE A.taught_by_faculty_id = '%s'"%(faculty.faculty_id)
         cur.execute(sql)
         
+        if cur.rowcount == 0:
+            return []
+
         subject_list = []
-        ctr = 1
+
+        if display_marks:
+            print("%4s|%-11s|%-45s|%-6s|%-8s|%13s|%13s|%s"%('Sr.#','SubjectCode','Subject Name',\
+                    'Branch','Semester','Max.Int.Marks','Max.Ext.Marks','Credits'))
+        else:
+            print("%4s|%-11s|%-45s|%-6s|%-8s"%('Sr.#','SubjectCode','Subject Name',\
+                    'Branch','Semester')) 
+
+        ctr=1
         for row in cur:
-            temp_sub = oM.FacultySubject(row[0],row[1],row[2],row[3],row[4],row[5])
+            temp_sub = oM.FacultySubject(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8])
             subject_list.append(temp_sub)
-            print("|%2d|%-6s|%-25s|%-5s|%2d|"%(ctr,temp_sub.subject_code,temp_sub.subject_name,
-                                                temp_sub.branch_code,temp_sub.semester))
-            ctr += 1 
+            if display_marks:
+                print("%4s|%-11s|%-45s|%-6s|%-8s|%13s|%13s|%s"%(ctr,temp_sub.subject_code,temp_sub.subject_name,\
+                    temp_sub.branch_code,temp_sub.semester,temp_sub.internal_marks,temp_sub.external_marks,temp_sub.credits))
+            else:
+                print("%4d|%-11s|%-45s|%-6s|%-8d"%(ctr,temp_sub.subject_code,temp_sub.subject_name,\
+                    temp_sub.branch_code,temp_sub.semester)) 
+            ctr += 1
+
         return subject_list
        
     except pymysql.OperationalError as e:
@@ -115,13 +132,55 @@ def upload_attendance(faculty):
     finally:
         cur.close()
         con.close()
-   
+  
+def display_enrolled_students(faculty_subject):
+    try: 
+        con = dBconnectivity.create_connection()
+        cur = dBconnectivity.create_cursor(con)
+        sql = "SELECT A.std_roll_no, CONCAT(D.first_name,' ',D.last_name) as Name FROM students A\
+                JOIN user_details D ON D.parent_user_id = A.parent_user_id\
+                JOIN branch_subjects B ON B.branch_code = A.std_branch and B.semester=A.std_semester\
+                JOIN faculty_subjects C ON C.branch_subject_id = B.id\
+                WHERE C.id=%d"%(faculty_subject.faculty_subject_id)
+
+        cur.execute(sql)
+        if cur.rowcount==0:
+            print("No students enrolled for this subject")
+            return -5
+
+        print("\nPlease find below the list of students enrolled for this subject:")
+        print("%-11s|%s"%('Roll.No.','Name'))
+        for row in cur:
+            print("%-11s|%s"%(row[0],row[1]))
+       
+        print('\n') 
+        return 1            
+        
+    
+    except pymysql.OperationalError as e:
+        print(e)
+        return -1
+    
+    except Exception as e:
+        print(e)
+        return -1
+
+    finally:
+        cur.close()
+        con.close()   
+
+
+ 
 def upload_attendance_subject(faculty_subject):
     try:
+        ret=display_enrolled_students(faculty_subject)
+        if ret < 1:
+            return
+        
         con = dBconnectivity.create_connection()
         cur = dBconnectivity.create_cursor(con)
        
-        #print(faculty_subject) 
+
         datetime = input("Please enter datetime of the lecture (YYYY-MM-DD HH:MM:SS): ")
         sql = "INSERT INTO class_attendance_header (faculty_subject_id, \
                 class_id, class_startdatetime, class_total_strength) VALUES \
@@ -168,7 +227,7 @@ def upload_attendance_subject(faculty_subject):
 
 def upload_marks(faculty):
     try:
-        subject_list = faculty_subjects(faculty)
+        subject_list = faculty_subjects(faculty,True)
         if len(subject_list)==0:
             print("There are no subjects allocated to you!")
             return
@@ -202,27 +261,20 @@ def upload_marks(faculty):
 
 
 def upload_marks_subject(faculty_subject):
-    try:
+    try: 
         con = dBconnectivity.create_connection()
         cur = dBconnectivity.create_cursor(con)
+        
+        ret=display_enrolled_students(faculty_subject)
+        if ret < 1:
+            return
+        
         year = 2018 
         print("Note: To upload marks .csv file should be written in following format")
         print("Student_Roll_No,Internal_Marks,External_Marks,Credit\n")
         print("Please enter the absolute/relative path name of the *.csv file: ")
         path = input("Path: ")
         
-        sql = "SELECT internal_marks, external_marks, Credits FROM subjects \
-                WHERE subject_code='%s'"%(faculty_subject.subject_code)
-        cur.execute(sql)
-        
-        for row in cur:
-            org_marks = row
-        
-        temp_row = []
-        for t in org_marks:
-            temp_row.append(100 if t is None else t)
-        row = temp_row 
-
         try:
             f1 = open(path,'r')
             
@@ -238,15 +290,17 @@ def upload_marks_subject(faculty_subject):
                 sql = "INSERT INTO stu_subject_marks (subject_code, semester, year,\
                     student_roll_no, max_internal_marks, internal_marks, max_external_marks,\
                     external_marks, max_credits, credits) VALUES ('%s',%d,%d,%s,%d,%s,%d,%s,%f,%s)"%(faculty_subject.subject_code,
-                    faculty_subject.semester,year,marks[0],row[0],marks[1],row[1],marks[2],row[2],marks[3])
+                    faculty_subject.semester,year,marks[0],faculty_subject.internal_marks,marks[1],faculty_subject.external_marks,
+                    marks[2],faculty_subject.credits,marks[3])
 
                 cur.execute(sql)
                 marks = f1.readline()
             
+            con.commit()
+            
             for std_roll_no in student_list:
                 update_semester_status(std_roll_no,faculty_subject.semester)
             
-            con.commit()
             
         except Exception as e:
             print(e)
@@ -278,9 +332,7 @@ def update_semester_status(student_roll_no, semester):
                 JOIN branch_subjects C on A.std_branch = C.branch_code \
                 JOIN subjects D on C.subject_code = D.subject_code \
                 where std_roll_no=%s and C.semester=%d"%(student_roll_no,semester) 
-       
-        print(sql)
- 
+        
         cur.execute(sql)
         tot_internal_marks, tot_external_marks, tot_credits = 0, 0, 0.0
         subject_list = []
@@ -289,6 +341,7 @@ def update_semester_status(student_roll_no, semester):
             tot_internal_marks += int(0 if row[1]==None else row[1])
             tot_external_marks += int(0 if row[2]==None else row[2])
             tot_credits += float(0.0 if row[3]==None else row[3])
+            subject_list.append(row[0])
         
         tot_max_marks = tot_internal_marks+tot_external_marks
         if tot_max_marks == 0:
@@ -298,15 +351,15 @@ def update_semester_status(student_roll_no, semester):
                 credits FROM stu_subject_marks \
                 WHERE student_roll_no=%s and semester=%d"%(student_roll_no, semester)
         cur.execute(sql)
-        
+
         internal_marks, external_marks, credits = 0, 0, 0.0
         for row in cur:
             if row[0] in subject_list:
-                subject.remove(row[0])
+                subject_list.remove(row[0])
             internal_marks += int(row[1])
             external_marks += int(row[2])
             credits += float(row[3])
-
+ 
         if len(subject_list)!=0:
             return
     
@@ -317,16 +370,17 @@ def update_semester_status(student_roll_no, semester):
             status = "FAIL"
         else:
             status = "PASS"
-
+        ll = [semester,tot_max_marks,semester,tot_marks_obtained,semester,status,student_roll_no]
+ 
         sql = "UPDATE stu_semwise_status SET\
                 sem_%d_max_marks=%d, sem_%d_marks=%d, sem_%d_status='%s'\
-                WHERE std_roll_no=%d"%(semester,tot_max_marks,semester,tot_marks_obtained,semester,status,student_roll_no)
+                WHERE std_roll_no=%s"%(semester,tot_max_marks,semester,tot_marks_obtained,semester,status,student_roll_no)
 
         cur.execute(sql)
         
         if status == "PASS" and semester!=8:
             sql = "UPDATE students SET std_semester=std_semester+1\
-                    WHERE std_roll_no=%d"%(student_roll_no)
+                    WHERE std_roll_no=%s"%(student_roll_no)
             cur.execute(sql)
         
         con.commit()

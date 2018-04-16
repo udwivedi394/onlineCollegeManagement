@@ -128,17 +128,21 @@ def check_subjects(student):
             else:
                 break
 
-        sql1 = "SELECT D.subject_code, D.subject, D.credits FROM students A \
+        sql1 = "SELECT D.subject_code, D.subject, D.internal_marks, D.external_marks, D.credits FROM students A \
                 JOIN branch B on A.std_branch = B.branch_code \
                 JOIN branch_subjects C on A.std_branch = C.branch_code \
                 JOIN subjects D on C.subject_code = D.subject_code \
                 where std_roll_no=%s and C.semester=%d"%(student.std_roll_no,int(sem))        
         cur.execute(sql1)       
 
+        if cur.rowcount==0:
+            return []        
+
         ctr = 1
-        print("%-6s|%-13s|%-45s|%11s"%('Sr.No.','Subject_Code','Subject_Name','Credits')) 
+        print("%-6s|%-13s|%-45s|%13s|%13s|%11s"%('Sr.No.','Subject_Code','Subject_Name',\
+                'Max.Int.Marks','Max.Ext.Marks','Credits')) 
         for row in cur:
-            print("%6d|%-13s|%-45s|%11.2f"%(ctr,row[0],row[1],row[2]))
+            print("%6d|%-13s|%-45s|%13s|%13s|%11.2f"%(ctr,row[0],row[1],row[2],row[3],row[4]))
             ctr += 1 
      
     except pymysql.OperationalError as e:

@@ -10,11 +10,14 @@ DROP TABLE IF EXISTS class_attendance_details;
 DROP TABLE IF EXISTS class_attendance_header;
 DROP TABLE IF EXISTS faculty_subjects;
 DROP TABLE IF EXISTS faculty;
+DROP TABLE IF EXISTS faculty_id_seq;
 DROP TABLE IF EXISTS employee;
 DROP TABLE IF EXISTS stu_semwise_status;
 DROP TABLE IF EXISTS stu_subject_marks;
+DROP TABLE IF EXISTS admin_table;
 SET FOREIGN_KEY_CHECKS = 1;
 DROP TRIGGER IF EXISTS student_enrollment;
+DROP TRIGGER IF EXISTS generate_faculty_id;
 
 
 /*Create Table*/
@@ -90,8 +93,12 @@ CREATE TABLE faculty(
     employee_id INTEGER NOT NULL UNIQUE,
     designation VARCHAR(20) NOT NULL CHECK (designation IN ('Assistant Professor', 'Professor', 'Lab Assistant', 'HOD')),
     salary INTEGER NOT NULL,
-    PRIMARY KEY(faculty_id),
+    PRIMARY KEY (faculty_id),
     FOREIGN KEY (employee_id) REFERENCES employee(employee_id)
+);
+
+CREATE TABLE faculty_id_seq(
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY
 );
 
 CREATE TABLE faculty_subjects(
@@ -177,7 +184,12 @@ CREATE TABLE stu_subject_marks(
     FOREIGN KEY (student_roll_no) REFERENCES students(std_roll_no)
 );
 
-
+CREATE TABLE admin_table(
+    id INT AUTO_INCREMENT,
+    user_id VARCHAR(20) UNIQUE,
+    password VARCHAR(30) NOT NULL,
+    PRIMARY KEY (id)
+);
 
 /*Triggers*/
 delimiter |
@@ -190,3 +202,18 @@ END;
 |
 
 delimiter ;
+
+delimiter |
+CREATE TRIGGER generate_faculty_id 
+BEFORE INSERT ON faculty
+FOR EACH ROW
+BEGIN
+    INSERT INTO faculty_id_seq VALUES (NULL);
+    SET NEW.faculty_id = CONCAT('F',LPAD(LAST_INSERT_ID(),3,'0'));
+    DELETE FROM faculty_id_seq WHERE id = LAST_INSERT_ID();
+END;
+|
+
+delimiter ;
+
+

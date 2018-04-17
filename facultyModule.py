@@ -270,7 +270,7 @@ def upload_marks_subject(faculty_subject):
             return
         
         year = 2018 
-        print("Note: To upload marks .csv file should be written in following format")
+        print("Note: To upload marks *.csv file should be written in following format")
         print("Student_Roll_No,Internal_Marks,External_Marks,Credit\n")
         print("Please enter the absolute/relative path name of the *.csv file: ")
         path = input("Path: ")
@@ -282,7 +282,7 @@ def upload_marks_subject(faculty_subject):
             marks = f1.readline()
             while marks:
                 marks = marks.strip().split(',') 
-                print("Marks:",marks)
+                
                 for i in range(len(marks)):
                    marks[i] = marks[i].strip()
             
@@ -332,7 +332,7 @@ def update_semester_status(student_roll_no, semester):
                 JOIN branch_subjects C on A.std_branch = C.branch_code \
                 JOIN subjects D on C.subject_code = D.subject_code \
                 where std_roll_no=%s and C.semester=%d"%(student_roll_no,semester) 
-        
+       
         cur.execute(sql)
         tot_internal_marks, tot_external_marks, tot_credits = 0, 0, 0.0
         subject_list = []
@@ -364,13 +364,14 @@ def update_semester_status(student_roll_no, semester):
             return
     
         tot_marks_obtained = internal_marks+external_marks
-        percentage = tot_marks_obtained/tot_max_marks
+        percentage = (tot_marks_obtained/tot_max_marks)*100
         
         if percentage <= 34.0:
             status = "FAIL"
         else:
             status = "PASS"
-        ll = [semester,tot_max_marks,semester,tot_marks_obtained,semester,status,student_roll_no]
+        
+        #ll = [semester,tot_max_marks,semester,tot_marks_obtained,semester,status,student_roll_no]
  
         sql = "UPDATE stu_semwise_status SET\
                 sem_%d_max_marks=%d, sem_%d_marks=%d, sem_%d_status='%s'\

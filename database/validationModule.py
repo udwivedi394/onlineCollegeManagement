@@ -4,7 +4,7 @@ Created on Apr 10, 2018
 '''
 
 from utility import dBconnectivity as db
-#from exceptions import admin_Module as aM
+from exceptions import adminModule as aM
 
 def get_user_pwd(user_name, password):
     try:
@@ -45,7 +45,7 @@ def validate_admin(user_name, password):
     try:
         con=db.create_connection()
         cur=db.create_cursor(con)
-        cur.execute("select id from admin_tab where lower(user_id)=:uname and password=:pwd", {"uname":user_name.lower() , "pwd":password})
+        cur.execute("select id from admin_table where lower(user_id)='%s' and password='%s'"%(user_name,password))
         count = 0
         for row in cur:
             count += 1
@@ -54,11 +54,11 @@ def validate_admin(user_name, password):
         raise aM.invalidUserPassword
     except aM.invalidUserPassword as e:
         print(e)
-        return 0
+        return -1
 
     except Exception as e:
         print("Error Detected", e)
-        return -1
+        return -2
 
     finally:
         cur.close()

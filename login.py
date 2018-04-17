@@ -4,6 +4,7 @@ from classes import memberModule as memc
 import studentModule as sM
 import facultyModule as fM
 import userRegistration as uR
+import adminModule as aM
 
 def login():
     end = False
@@ -46,10 +47,13 @@ if __name__=='__main__':
     while 1:
         print("1. Login")
         print("2. SignUp")
+        print("3. Admin")
         ch=input("Any other key to exit: ")
         if ch=='1':
             login()
         elif ch=='2':
             signup()
+        elif ch=='3':
+            aM.adminModule()
         else:
             break

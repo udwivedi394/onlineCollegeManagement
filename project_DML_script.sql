@@ -783,7 +783,15 @@ INSERT INTO branch_subjects(branch_code,subject_code,semester) VALUES ('ECE','EC
 
 INSERT INTO employee(parent_user_id, emp_category) VALUES (7,'Faculty'),(8,'Faculty'),(9,'Security'),(10,'Other Staff');
 
+/*
 INSERT INTO faculty VALUES ('F001', 74000, 'HOD', 1223500),('F002', 74001, 'Assistant Professor', 666000);
+*/
+
+INSERT INTO faculty(employee_id,designation,salary) VALUES (74000,'HOD',12235000),(74001,'Assistant Professor', 666000);
+
 
 INSERT INTO faculty_subjects (taught_by_faculty_id, subject_code, branch_subject_id) VALUES ('F001', 'MA101', 1),('F001', 'MA101', 183);
 INSERT INTO faculty_subjects (taught_by_faculty_id, subject_code, branch_subject_id) VALUES ('F001', 'MA101', 270);
+
+/*Admin Table*/
+INSERT INTO admin_table (user_id, password) VALUES ('udwivedi','password')
